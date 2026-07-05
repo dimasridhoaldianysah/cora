@@ -1,0 +1,113 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:archive/archive_io.dart';
+
+import '../../data/models/robot_profile.dart';
+
+class ZipExporter {
+  static Future<String> export(RobotProfile profile, String inoContent) async {
+    // 1. Generate README.md
+    final readmeContent = _generateReadme(profile);
+
+    // 2. Prepare Zip Encoding
+    final archive = Archive();
+    
+    // Add firmware.ino inside a folder named 'firmware'
+    final inoBytes = utf8.encode(inoContent);
+    final inoFile = ArchiveFile('firmware/firmware.ino', inoBytes.length, inoBytes);
+    archive.addFile(inoFile);
+    
+    // Add README.md at root
+    final readmeBytes = utf8.encode(readmeContent);
+    final readmeFile = ArchiveFile('README.md', readmeBytes.length, readmeBytes);
+    archive.addFile(readmeFile);
+
+    // Encode archive to ZIP
+    final zipEncoder = ZipEncoder();
+    final zipData = zipEncoder.encode(archive);
+
+    if (zipData == null) {
+      throw Exception('Gagal mengompresi file ZIP');
+    }
+
+    // 3. Save to Downloads directory
+    final downloadsDir = Directory('/storage/emulated/0/Download/CORA');
+    if (!await downloadsDir.exists()) {
+      await downloadsDir.create(recursive: true);
+    }
+    
+    final safeName = profile.name.replaceAll(' ', '_').toLowerCase();
+    final zipFile = File('${downloadsDir.path}/${safeName}_firmware.zip');
+    
+    await zipFile.writeAsBytes(zipData);
+    
+    return zipFile.path;
+  }
+
+  static String _generateReadme(RobotProfile profile) {
+    final buffer = StringBuffer();
+    
+    buffer.writeln('# CORA Robot Firmware — ${profile.name}');
+    buffer.writeln();
+    buffer.writeln('## Spesifikasi Robot');
+    buffer.writeln('- **Board:** ${profile.board.toUpperCase()}');
+    buffer.writeln('- **Driver:** ${profile.driverType.toUpperCase()}');
+    buffer.writeln('- **Jumlah Joint:** ${profile.jointCount}');
+    buffer.writeln();
+    buffer.writeln('## Panduan Upload');
+    buffer.writeln('1. Ekstrak file ZIP ini.');
+    buffer.writeln('2. Buka folder `firmware` dan klik ganda file `firmware.ino` (akan terbuka di Arduino IDE).');
+    
+    if (profile.driverType == 'pca9685') {
+      buffer.writeln('3. Buka **Sketch > Include Library > Manage Libraries...**');
+      buffer.writeln('4. Cari dan instal pustaka **Adafruit PWM Servo Driver Library**.');
+    } else if (profile.board == 'esp32') {
+      buffer.writeln('3. Pastikan Board ESP32 sudah terinstal di Arduino IDE.');
+      buffer.writeln('4. Instal library **ESP32Servo** dari Library Manager jika belum tersedia.');
+    }
+    
+    buffer.writeln('5. Pilih Board dan Port yang sesuai, lalu tekan **Upload**.');
+    buffer.writeln();
+    buffer.writeln('## Wiring Guide (Konfigurasi Joint)');
+    buffer.writeln();
+    if (profile.driverType == 'pca9685') {
+      buffer.writeln('| Joint Index | Pin/Channel | Min Angle | Max Angle | Pulse Min | Pulse Max |');
+      buffer.writeln('| --- | --- | --- | --- | --- | --- |');
+      for (int i = 0; i < profile.joints.length; i++) {
+        final joint = profile.joints[i];
+        buffer.writeln('| Joint ${i + 1} | ${joint.pinNumber} | ${joint.minAngle}° | ${joint.maxAngle}° | ${joint.servoMin} | ${joint.servoMax} |');
+      }
+      
+      buffer.writeln();
+      buffer.writeln('## Referensi Kalibrasi Pulse (PCA9685, 50Hz)');
+      buffer.writeln();
+      buffer.writeln('| Model Servo     | servoMin | servoMax | Catatan                |');
+      buffer.writeln('|-----------------|----------|----------|------------------------|');
+      buffer.writeln('| SG90            | 102      | 492      | Nano servo, paling umum|');
+      buffer.writeln('| MG90S           | 123      | 492      | Metal gear SG90        |');
+      buffer.writeln('| MG996R          | 143      | 471      | High torque, base joint|');
+      buffer.writeln('| DS3225          | 102      | 512      | 25kg torque            |');
+      buffer.writeln('| Hitec HS-645MG  | 184      | 430      | Presisi tinggi         |');
+      buffer.writeln('| Tower Pro MG92B | 143      | 471      | Medium torque          |');
+      buffer.writeln();
+      buffer.writeln('> Nilai di atas adalah titik awal kalibrasi pada frekuensi 50Hz.');
+      buffer.writeln('> Servo kelas hobbyist memiliki toleransi manufaktur antar unit.');
+      buffer.writeln('> Jika servo bergetar atau tidak presisi, sesuaikan nilai ');
+      buffer.writeln('> servoMin/servoMax sebesar +/- 5 sampai 15 tick secara bertahap');
+      buffer.writeln('> sampai gerakan akurat dan tidak ada getaran di posisi ekstrem.');
+      
+    } else {
+      buffer.writeln('| Joint Index | Pin/Channel | Min Angle | Max Angle |');
+      buffer.writeln('| --- | --- | --- | --- |');
+      for (int i = 0; i < profile.joints.length; i++) {
+        final joint = profile.joints[i];
+        buffer.writeln('| Joint ${i + 1} | ${joint.pinNumber} | ${joint.minAngle}° | ${joint.maxAngle}° |');
+      }
+    }
+    
+    buffer.writeln();
+    buffer.writeln('---\n*Generated by CORA App*');
+    
+    return buffer.toString();
+  }
+}
