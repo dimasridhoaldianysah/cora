@@ -64,7 +64,7 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Dimas Ridho Aldiansyah',
+            'Tim CORA',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 24),
