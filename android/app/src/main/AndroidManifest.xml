@@ -14,7 +14,7 @@
         android:maxSdkVersion="32" />
 
     <application
-        android:label="cora_app"
+        android:label="CORA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
