@@ -98,7 +98,7 @@ The integrated firmware generator automatically constructs the C++ parsing logic
 
 Contributions are welcome! If you'd like to improve CORA or add support for new microcontrollers/drivers, please open an issue or submit a pull request.
 
-## Tim Pengembang (Tim CORA)
+## Development Team (Tim CORA)
 * **Dimas Ridho Aldiansyah** - Lead Developer & Mobile Engineer.
 
 ## License
