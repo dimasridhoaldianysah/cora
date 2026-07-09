@@ -1,4 +1,4 @@
-# CORA (Controller Robotic Arm)
+⁹# CORA (Controller Robotic Arm)
 
 CORA is a comprehensive Flutter-based companion application designed to control, train (Teach & Record), and automate DIY robotic arms via Bluetooth. Built with modern UI/UX principles (Material 3), CORA supports multiple boards, drivers, and connection protocols to provide a flexible and powerful robotic control experience.
 
@@ -100,6 +100,7 @@ Contributions are welcome! If you'd like to improve CORA or add support for new 
 
 ## Development Team (Tim CORA)
 * **Dimas Ridho Aldiansyah** - Lead Developer & Mobile Engineer.
+* **ALKODRI** - Testing.
 
 ## License
 
