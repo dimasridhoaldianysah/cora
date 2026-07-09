@@ -101,6 +101,7 @@ Contributions are welcome! If you'd like to improve CORA or add support for new 
 ## Development Team (Tim CORA)
 * **Dimas Ridho Aldiansyah** - Lead Developer & Mobile Engineer.
 * **ALKODRI** - Testing.
+* **Febby Mulyadi - UI/UX Desainer.
 
 ## License
 
